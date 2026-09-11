@@ -32,6 +32,31 @@ jobs:
           set "remote_url=https://github.com/%GITHUB_REPOSITORY%"
           set "sha=%GITHUB_SHA%"
           call ".scripts\run_win_build.bat"
+      - name: Inspect Unicode fixture failure
+        if: failure()
+        shell: pwsh
+        run: |
+          Get-ChildItem C:\bld -Recurse -Filter '*xample*' | ForEach-Object {
+            Write-Host $_.FullName
+            Write-Host ([BitConverter]::ToString([Text.Encoding]::UTF8.GetBytes($_.Name)))
+          }
+          Get-ChildItem C:\bld -Recurse -Filter CTestTestfile.cmake | ForEach-Object {
+            Select-String -Path $_.FullName -Pattern 'non_ascii_read' | ForEach-Object { Write-Host $_ }
+          }
+          Get-ChildItem C:\bld -Recurse -Filter build.ninja | ForEach-Object {
+            Select-String -Path $_.FullName -Pattern 'file_test.c.obj|FLAGS =|copy_directory' | Select-Object -First 12 | ForEach-Object { Write-Host $_ }
+          }
+      - name: Preserve Unicode failure evidence
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: aws-common-unicode-evidence
+          path: |
+            C:\bld\**\work\tests\resources\*
+            C:\bld\**\work\build\tests\aws-c-common-tests.exe
+            C:\bld\**\work\build\tests\*xample*
+            C:\bld\**\work\build\tests\CTestTestfile.cmake
+          retention-days: 7
       - name: Preserve AWS C common package
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
