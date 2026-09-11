@@ -12,7 +12,7 @@ source:
     - 0001-Explicitly-remove-Werror.patch
 
 build:
-  number: 0
+  number: 1
   run_exports:
     - {{ pin_subpackage("aws-c-common", max_pin="x.x.x") }}
 
@@ -24,7 +24,18 @@ requirements:
     - ninja
 
 test:
+  requires:
+    - {{ compiler('c') }}  # [target_platform == "win-arm64"]
+    - cmake  # [target_platform == "win-arm64"]
+  files:
+    - CMakeLists.txt  # [target_platform == "win-arm64"]
+    - consumer.c  # [target_platform == "win-arm64"]
   commands:
+    - cmake -S . -B consumer-build -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%LIBRARY_PREFIX%"  # [target_platform == "win-arm64"]
+    - cmake --build consumer-build  # [target_platform == "win-arm64"]
+    - consumer-build\aws_consumer.exe  # [target_platform == "win-arm64"]
+    - dumpbin /headers "%LIBRARY_BIN%\aws-c-common.dll" | findstr /I /C:"AA64 machine (ARM64)"  # [target_platform == "win-arm64"]
+    - dumpbin /headers consumer-build\aws_consumer.exe | findstr /I /C:"AA64 machine (ARM64)"  # [target_platform == "win-arm64"]
     - test -f $PREFIX/lib/libaws-c-common${SHLIB_EXT}  # [unix]
     - test -f $PREFIX/include/aws/common/config.h  # [unix]
     - test -f $PREFIX/lib/cmake/aws-c-common/modules/AwsCFlags.cmake  # [unix]

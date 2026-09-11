@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.15)
+project(aws_consumer LANGUAGES C)
+find_package(aws-c-common CONFIG REQUIRED)
+add_executable(aws_consumer consumer.c)
+target_link_libraries(aws_consumer PRIVATE AWS::aws-c-common)
