@@ -1,7 +1,7 @@
-name: AWS C common native Windows ARM64
+name: AWS C common 0.14.4 native Windows ARM64
 on:
   push:
-    branches: [codex/aws-common-arm64-probe]
+    branches: [codex/aws-common-pinned-arm64-probe]
 permissions:
   contents: read
 jobs:
