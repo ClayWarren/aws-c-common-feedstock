@@ -1,3 +1,6 @@
+powershell -NoProfile -ExecutionPolicy Bypass -File "%RECIPE_DIR%\restore-fixture-name.ps1"
+if errorlevel 1 exit 1
+
 mkdir "%SRC_DIR%"\build
 pushd "%SRC_DIR%"\build
 
